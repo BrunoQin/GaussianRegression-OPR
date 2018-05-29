@@ -21,12 +21,13 @@ repositories {
 }
 
 shadowJar {
-    baseName = 'collect_data'
+    baseName = 'CollectData'
     classifier = null
     version = null
     dependencies {
         include(dependency('edu.ucar:netcdfAll:4.6.10'))
         include(dependency('gov.nist.math:jama:1.0.3'))
+        include(dependency('net.sourceforge.javacsv:javacsv:2.0'))
     }
 }
 
@@ -34,6 +35,9 @@ dependencies {
 
     // https://mvnrepository.com/artifact/edu.ucar/netcdfAll
     compile group: 'edu.ucar', name: 'netcdfAll', version: '4.6.10'
+
+    // https://mvnrepository.com/artifact/net.sourceforge.javacsv/javacsv
+    compile group: 'net.sourceforge.javacsv', name: 'javacsv', version: '2.0'
 
     // https://mvnrepository.com/artifact/gov.nist.math/jama
     compile group: 'gov.nist.math', name: 'jama', version: '1.0.3'
