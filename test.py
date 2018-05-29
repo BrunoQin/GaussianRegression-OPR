@@ -43,7 +43,7 @@ xset, yset = np.meshgrid(np.arange(x_min, x_max, 0.5), np.arange(y_min, y_max, 0
 
 #查看网格测试数据输出结果，并返回标准差。
 
-output, err = reg.predict(np.c_[xset.ravel(), yset.ravel()],return_std=True)
+output, err = reg.predict(np.c_[xset.ravel(), yset.ravel()], return_std=True)
 
 output, err = output.reshape(xset.shape), err.reshape(xset.shape)
 
@@ -59,13 +59,9 @@ ax1 = fig.add_subplot(121, projection='3d')
 
 surf = ax1.plot_wireframe(xset, yset, output, rstride=10, cstride=2, antialiased=True)
 
-surf_u = ax1.plot_wireframe(xset, yset, up, colors='lightgreen', linewidths=1,
+surf_u = ax1.plot_wireframe(xset, yset, up, colors='lightgreen', linewidths=1, rstride=10, cstride=2, antialiased=True)
 
-                            rstride=10, cstride=2, antialiased=True)
-
-surf_d = ax1.plot_wireframe(xset, yset, down, colors='lightgreen', linewidths=1,
-
-                            rstride=10, cstride=2, antialiased=True)
+surf_d = ax1.plot_wireframe(xset, yset, down, colors='lightgreen', linewidths=1, rstride=10, cstride=2, antialiased=True)
 
 ax1.scatter(data[:, 0], data[:, 1], data[:, 2], c='red')
 
