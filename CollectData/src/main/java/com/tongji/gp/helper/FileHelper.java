@@ -40,11 +40,11 @@ public class FileHelper {
 
                     Array part = sst.read((j * 12) + ":" + (j * 12) + ":1, 20:169:1, 40:199:1");
                     float[][] content = (float[][])part.reduce().copyToNDJavaArray();
-                    writeFile(content, startMonthFilePath + (5 * i + 1 + j * 12) + ".start.csv");
+                    writeFile(content, startMonthFilePath + (5 * i + 1 + j) + ".start.csv");
 
                     part = sst.read((j * 12 + 11) + ":" + (j * 12 + 11) + ":1, 20:169:1, 40:199:1");
                     content = (float[][])part.reduce().copyToNDJavaArray();
-                    writeFile(content, predictMonthFilePath + (5 * i + 1 + j * 12 + 11) + ".predict.csv");
+                    writeFile(content, predictMonthFilePath + (5 * i + 1 + j) + ".predict.csv");
 
                 }
 
