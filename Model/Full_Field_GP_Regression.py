@@ -24,7 +24,7 @@ start = start[:, 0:2]
 predict = predict[:, 0:2]
 
 input = [start[:, i].reshape(start.shape[0], 1) for i in range(len(start[0]))]
-output: [(predict[:, i]-start[:, i]).reshape(start.shape[0], 1) for i in range(len(start[0]))]
+output = [(predict[:, i]-start[:, i]).reshape(start.shape[0], 1) for i in range(len(start[0]))]
 
 
 def plot_2outputs(m, xlim, ylim):
