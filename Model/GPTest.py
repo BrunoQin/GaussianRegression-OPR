@@ -1,4 +1,5 @@
 import GPy
+from sklearn import preprocessing
 import numpy as np
 import gzip
 import pickle
@@ -13,12 +14,14 @@ with gzip.open('./data/start.pkl.gz') as fp:
 
 # clean data
 start[start == -1.0E20] = 'nan'
-start_ave = np.mean(start, axis=0)
-start = start - start_ave
+start = start[:, ~np.all(np.isnan(start), axis=0)]
 
 predict[predict == -1.0E20] = 'nan'
-predict_ave = np.mean(predict, axis=0)
-predict = predict - predict_ave
+predict = predict[:, ~np.all(np.isnan(predict), axis=0)]
+
+# preprocess
+start = preprocessing.scale(start)
+predict = preprocessing.scale(predict)
 
 
 def plot_2outputs(xlim, ylim):
@@ -39,10 +42,10 @@ def plot_line(xlim, ylim):
 plot_2outputs(start[:, 0:1].T, (predict[:, 0:1] - start[:, 0:1]).T)
 
 # build model
-# K = GPy.kern.Matern32(1)
-# icm = GPy.util.multioutput.ICM(input_dim=1, num_outputs=1, kernel=K)
-#
-# kernel = GPy.kern.Matern52(1, ARD=True) + GPy.kern.White(1)
+K = GPy.kern.Matern32(1)
+icm = GPy.util.multioutput.ICM(input_dim=1, num_outputs=1, kernel=K)
+
+kernel = GPy.kern.Matern52(1, ARD=True) + GPy.kern.White(1)
 
 kernel = GPy.kern.Matern52(1) + \
          GPy.kern.White(1) + \
@@ -61,19 +64,3 @@ fig = m.plot()
 GPy.plotting.show(fig, filename='basic_gp_regression_notebook')
 
 plt.show()
-
-newX = start[0:1, 0:1]
-
-print(newX)
-print('\n')
-newY = m.predict(newX)
-newY = np.array(newY)
-print('\n')
-print(predict[0:1, 0:1])
-print(newY)
-
-print('\n')
-print(predict[0:1, 0:1] - start[0:1, 0:1] - newY)
-
-print('\n')
-print(predict[0:1, 0:1] - start[0:1, 0:1])

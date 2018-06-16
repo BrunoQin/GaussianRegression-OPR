@@ -41,4 +41,15 @@ m_load.update_model(False)                          # do not call the underlying
 m_load.initialize_parameter()                       # Initialize the parameters (connect the parameters up)
 m_load[:] = np.load('GP_Regression.npy')            # Load the parameters
 m_load.update_model(True)                           # Call the algebra only once
-print(m_load)
+
+
+print(start[0])
+print(predict[0])
+newX = np.array([[4.496155, 0], [4.4616776, 1]], dtype=float)
+# print(newX)
+# newX = np.hstack([newX, np.ones_like(newX)])
+# print(newX)
+noise_dict = {'output_index': newX[:, 1:].astype(int)}
+Y = m_load.predict(newX, Y_metadata=noise_dict)
+
+print(Y)

@@ -15,19 +15,16 @@ with gzip.open('./data/start.pkl.gz') as fp:
 # clean data
 start[start == -1.0E20] = 'nan'
 start = start[:, ~np.all(np.isnan(start), axis=0)]
-# start_ave = np.mean(start, axis=0)
-# start = start - start_ave
 
 predict[predict == -1.0E20] = 'nan'
 predict = predict[:, ~np.all(np.isnan(predict), axis=0)]
-# predict_ave = np.mean(predict, axis=0)
-# predict = predict - predict_ave
 
+# preprocess
 start = preprocessing.scale(start)
 predict = preprocessing.scale(predict)
 
-start = start[:, 0:2]
-predict = predict[:, 0:2]
+# start = start[:, 0:2]
+# predict = predict[:, 0:2]
 
 input = [start[:, i].reshape(start.shape[0], 1) for i in range(len(start[0]))]
 output = [(predict[:, i]-start[:, i]).reshape(start.shape[0], 1) for i in range(len(start[0]))]
