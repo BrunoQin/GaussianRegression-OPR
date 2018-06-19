@@ -1,5 +1,6 @@
 import GPy
 from sklearn import preprocessing
+import multiprocessing as mp
 import numpy as np
 import gzip
 import pickle
@@ -23,35 +24,24 @@ predict = predict[:, ~np.all(np.isnan(predict), axis=0)]
 start = preprocessing.scale(start)
 predict = preprocessing.scale(predict)
 
-# start = start[:, 0:2]
-# predict = predict[:, 0:2]
 
-input = [start[:, i].reshape(start.shape[0], 1) for i in range(len(start[0]))]
-output = [(predict[:, i]-start[:, i]).reshape(start.shape[0], 1) for i in range(len(start[0]))]
+def train(s, p):
+    input = [s[:, i].reshape(s.shape[0], 1) for i in range(len(s[0]))]
+    output = [(p[:, i]-s[:, i]).reshape(s.shape[0], 1) for i in range(len(s[0]))]
 
+    k = GPy.kern.Matern32(1)
+    icm = GPy.util.multioutput.ICM(input_dim=1, num_outputs=start.shape[1], kernel=k)
+    m = GPy.models.GPCoregionalizedRegression(input, output, kernel=icm)
+    m['.*Mat32.var'].constrain_fixed(1.)
+    m.optimize(messages=True, max_f_eval=1000)
 
-def plot_2outputs(m, xlim, ylim):
-    fig = plt.figure(figsize=(12, 8))
-    #Output 1
-    ax1 = fig.add_subplot(211)
-    ax1.set_xlim(xlim)
-    ax1.set_title('Output 1')
-    m.plot(plot_limits=xlim, fixed_inputs=[(1, 0)], which_data_rows=slice(0, 100), ax=ax1)
-    #Output 2
-    ax2 = fig.add_subplot(212)
-    ax2.set_xlim(xlim)
-    ax2.set_title('Output 2')
-    m.plot(plot_limits=xlim, fixed_inputs=[(1, 1)], which_data_rows=slice(100, 200), ax=ax2)
+    np.save('GP_Regression.npy', m.param_array)
 
 
-K = GPy.kern.Matern32(1)
-icm = GPy.util.multioutput.ICM(input_dim=1, num_outputs=2, kernel=K)
+# pool = mp.Pool()
+# res = pool.starmap(train, [(start[:, 0:2], predict[:, 0:2])])
+# pool.close()
+# pool.join()
+train(start[:, 0:2], predict[:, 0:2])
 
-m = GPy.models.GPCoregionalizedRegression(input, output, kernel=icm)
-m['.*Mat32.var'].constrain_fixed(1.)
-m.optimize()
-
-np.save('GP_Regression.npy', m.param_array)
-
-plot_2outputs(m, xlim=(-5, 5), ylim=(-5, 5))
 plt.show()
