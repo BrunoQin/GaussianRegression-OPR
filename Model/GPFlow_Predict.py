@@ -8,10 +8,33 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = '1'  # 这是默认的显示等级，显示
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = '2'  # 只显示 warning 和 Error
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = '3'  # 只显示 Error
 
-m = gpflow.saver.Saver().load('./model/gp')
+# read data
+with gzip.open('./data/predict.pkl.gz') as fp:
+    predict = np.array(pickle.load(fp))
 
-xtest = np.linspace(0, 1, 10)[:, None]
-print(np.hstack((xtest, np.zeros_like(xtest))))
-mu1, var1 = m.predict_f(np.hstack((xtest, np.zeros_like(xtest))))
-print(mu1)
-print(var1)
+with gzip.open('./data/start.pkl.gz') as fp:
+    start = np.array(pickle.load(fp))
+
+# clean data
+start[start == -1.0E20] = 'nan'
+start = start[:, ~np.all(np.isnan(start), axis=0)]
+
+predict[predict == -1.0E20] = 'nan'
+predict = predict[:, ~np.all(np.isnan(predict), axis=0)]
+
+# preprocess
+start = preprocessing.scale(start)
+predict = preprocessing.scale(predict)
+predict = predict-start
+
+start = start[:, 0:2]
+predict = predict[:, 0:2]
+
+m = gpflow.saver.Saver().load('./model/multioutput.mdl')
+
+pX = [start[1]]
+print(pX)
+pY, pYv = m.predict_f(pX)
+print(pY)
+print(pYv)
+print(predict[1])
