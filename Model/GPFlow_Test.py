@@ -1,5 +1,7 @@
 import os
+import time
 import gpflow
+import tensorflow as tf
 from sklearn import preprocessing
 import numpy as np
 import gzip
