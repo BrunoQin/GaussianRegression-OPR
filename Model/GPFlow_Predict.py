@@ -27,8 +27,8 @@ start = preprocessing.scale(start)
 predict = preprocessing.scale(predict)
 predict = predict-start
 
-start = start[:, 0:2]
-predict = predict[:, 0:2]
+# start = start[:, 0:2]
+# predict = predict[:, 0:2]
 
 m = gpflow.saver.Saver().load('./model/multioutput.mdl')
 

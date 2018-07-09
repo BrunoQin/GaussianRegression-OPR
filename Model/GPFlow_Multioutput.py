@@ -1,9 +1,9 @@
 import os
-import gpflow
 from sklearn import preprocessing
 import numpy as np
 import gzip
 import pickle
+import gpflow
 import gpflow.multioutput.kernels as mk
 import gpflow.multioutput.features as mf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = '1'  # 这是默认的显示等级，显示所有信息
@@ -29,8 +29,8 @@ start = preprocessing.scale(start)
 predict = preprocessing.scale(predict)
 predict = predict-start
 
-start = start[:, 0:2]
-predict = predict[:, 0:2]
+# start = start[:, 0:2]
+# predict = predict[:, 0:2]
 
 D = start.shape[1]  # number of input dimensions
 M = 20  # number of inducing points

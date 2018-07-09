@@ -28,7 +28,7 @@ predict = preprocessing.scale(predict)
 predict = predict-start
 
 # build model
-M = 2
+M = 100
 k1 = gpflow.kernels.Matern32(1, active_dims=[0])
 coreg = gpflow.kernels.Coregion(1, output_dim=M, rank=M, active_dims=[1])
 kern = k1 * coreg
@@ -55,7 +55,7 @@ for i in range(M-2):
     )
 # construct model
 m = gpflow.models.VGP(X_augmented, Y_augmented, kern=kern, likelihood=lik, num_latent=1)
-gpflow.train.ScipyOptimizer().minimize(m)
+gpflow.train.ScipyOptimizer().minimize(m, disp=True)
 
 saver = gpflow.Saver()
-saver.save('./model/gp', m)
+saver.save('./model/gp-100', m)
