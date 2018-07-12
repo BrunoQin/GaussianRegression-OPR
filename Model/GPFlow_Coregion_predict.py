@@ -27,16 +27,13 @@ start = preprocessing.scale(start)
 predict = preprocessing.scale(predict)
 predict = predict-start
 
-# build model
+
 M = 3
-k1 = gpflow.kernels.Matern32(1, active_dims=[0])
-coreg = gpflow.kernels.Coregion(1, output_dim=M, rank=M, active_dims=[1])
-kern = k1 * coreg
-# construct kernel
-like_array = [gpflow.likelihoods.StudentT(), gpflow.likelihoods.StudentT()]
-for i in range(M-2):
-    like_array.append(gpflow.likelihoods.StudentT())
-lik = gpflow.likelihoods.SwitchedLikelihood(like_array)
+start = start[0:10, 0:M]
+predict = predict[0:10, 0:M]
+
+m = gpflow.saver.Saver().load('./model/gp.mdl')
+
 # construct x
 X_augmented = np.vstack(
     (np.hstack((start[:, 0:1], np.zeros_like(start[:, 0:1]))), np.hstack((start[:, 1:2], np.ones_like(start[:, 1:2]))))
@@ -53,9 +50,11 @@ for i in range(M-2):
     Y_augmented = np.vstack(
         (Y_augmented, np.hstack((predict[:, i+2:i+3], (i+2)*np.ones_like(start[:, i+2:i+3]))))
     )
-# construct model
-m = gpflow.models.VGP(X_augmented, Y_augmented, kern=kern, likelihood=lik, num_latent=1)
-gpflow.train.ScipyOptimizer().minimize(m, disp=True)
 
-saver = gpflow.Saver()
-saver.save('./model/gp.mdl', m)
+
+print(X_augmented)
+pY, pYv = m.predict_f(X_augmented)
+print(pY)
+# print(pYv)
+print(Y_augmented)
+# print(pY - Y_augmented[:, 0])
