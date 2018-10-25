@@ -18,7 +18,7 @@ public class FileHelper {
 
     public static Matrix prepareFile(){
 
-        for(int i = 10; i < 70; i++){
+        for(int i = 10; i < 90; i++){
 
             String fileName;
             if((5 * i + 1) < 100){
@@ -35,16 +35,13 @@ public class FileHelper {
 
                 for(int j = 0; j < 5; j++){
 
-                    String startMonthFilePath = WRITEPATH + "start/";
-                    String predictMonthFilePath = WRITEPATH + "predict/";
+                    String dataFilePath = WRITEPATH + "data/";
 
-                    Array part = sst.read((j * 12) + ":" + (j * 12) + ":1, 20:169:1, 40:199:1");
-                    float[][] content = (float[][])part.reduce().copyToNDJavaArray();
-                    writeFile(content, startMonthFilePath + (5 * i + 1 + j) + ".start.csv");
-
-                    part = sst.read((j * 12 + 11) + ":" + (j * 12 + 11) + ":1, 20:169:1, 40:199:1");
-                    content = (float[][])part.reduce().copyToNDJavaArray();
-                    writeFile(content, predictMonthFilePath + (5 * i + 1 + j) + ".predict.csv");
+                    for(int k = 0; k < 12; k++){
+                        Array part = sst.read((j * 12 + k) + ":" + (j * 12 + k) + ":1, 0:199:1, 0:359:1");
+                        float[][] content = (float[][])part.reduce().copyToNDJavaArray();
+                        writeFile(content, dataFilePath + (5 * i + j + 1) + "." + (k + 1) + ".csv");
+                    }
 
                 }
 
