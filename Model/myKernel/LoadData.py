@@ -4,7 +4,9 @@ import numpy as np
 
 
 class LoadData():
-    def load_ocean(self):
+
+    @staticmethod
+    def load_ocean():
         # read data
         with gzip.open('OCEAN_data/redata.pkl.gz') as fp:
             redata = np.array(pickle.load(fp)).astype(float)

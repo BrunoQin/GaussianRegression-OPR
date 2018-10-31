@@ -15,7 +15,7 @@ float_type = gpflow.settings.float_type
 
 
 def ex1():
-    fX_dim = 5
+    fX_dim = 1
     M = 100
     X, Y, Xt, Yt = LoadData.load_ocean()
 
