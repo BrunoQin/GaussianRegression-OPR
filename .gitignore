@@ -1,1 +1,5 @@
 Model/myKernel/data/MNIST_data
+
+*/OCEAN_data
+
+Model/myKernel/__pycache__/*
