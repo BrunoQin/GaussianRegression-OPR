@@ -31,7 +31,7 @@ def ex1():
     model = NN_SVGP(X, Y, kern, lik, Z=Z, minibatch_size=200)
 
     # use gpflow wrappers to train. NB all session handling is done for us
-    gpflow.training.AdamOptimizer(0.001).minimize(model, maxiter=30000)
+    gpflow.training.AdamOptimizer(0.001).minimize(model, maxiter=30000, disp=True)
 
     # predictions
     pY, pYv = model.predict_y(Xt)
