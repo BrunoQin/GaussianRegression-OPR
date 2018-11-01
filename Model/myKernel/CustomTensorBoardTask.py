@@ -1,5 +1,4 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES']=""
 import numpy as np
 import gpflow
 import gpflow.training.monitor as mon

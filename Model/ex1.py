@@ -1,5 +1,4 @@
 import os
-os.environ['CUDA_VISIBLE_DEVICES']=""
 import numpy as np
 import tensorflow as tf
 import gpflow
@@ -9,11 +8,8 @@ import gpflow.training.monitor as mon
 from myKernel.KernelWithNN import KernelWithNN
 from myKernel.KernelWithNN import NNComposedKernel
 from myKernel.KernelWithNN import NN_SVGP
-
 from myKernel.CustomTensorBoardTask import CustomTensorBoardTask
-
 from myKernel.NN import NN
-
 from myKernel.LoadData import LoadData
 
 float_type = gpflow.settings.float_type
@@ -34,7 +30,6 @@ def ex1():
     Z = kmeans2(X, M, minit='points')[0]
 
     model = NN_SVGP(X, Y, kern, lik, Z=Z, minibatch_size=200)
-
 
     session = model.enquire_session()
     global_step = mon.create_global_step(session)
@@ -63,6 +58,7 @@ def ex1():
     custom_tboard_task = CustomTensorBoardTask(file_writer, model, Xt, Yt).with_name('custom_tboard') \
         .with_condition(mon.PeriodicIterationCondition(100)) \
         .with_exit_condition(True)
+
     monitor_tasks = [print_task, model_tboard_task, lml_tboard_task, custom_tboard_task, saver_task, sleep_task]
     monitor = mon.Monitor(monitor_tasks, session, global_step)
 
@@ -76,12 +72,14 @@ def ex1():
         optimiser.minimize(model, step_callback=monitor, maxiter=30000, global_step=global_step)
 
     file_writer.close()
-    # # predictions
-    # pY, pYv = model.predict_y(Xt)
-    # rmse = np.mean((pY - Yt) ** 2.0) ** 0.5
-    # nlpp = -np.mean(-0.5 * np.log(2 * np.pi * pYv) - 0.5 * (Yt - pY) ** 2.0 / pYv)
 
-    # print('rmse is {:.4f}%, nlpp is {:.f}%'.format(rmse, nlpp))
+    print('LML after the optimisation: %f' % m.compute_log_likelihood())
+    # # predictions
+    pY, pYv = model.predict_y(Xt)
+    rmse = np.mean((pY - Yt) ** 2.0) ** 0.5
+    nlpp = -np.mean(-0.5 * np.log(2 * np.pi * pYv) - 0.5 * (Yt - pY) ** 2.0 / pYv)
+
+    print('rmse is {:.4f}%, nlpp is {:.f}%'.format(rmse, nlpp))
 
 
 if __name__ == "__main__":
