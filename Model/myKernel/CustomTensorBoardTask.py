@@ -1,4 +1,3 @@
-import os
 import numpy as np
 import gpflow
 import gpflow.training.monitor as mon

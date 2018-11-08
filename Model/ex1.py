@@ -5,7 +5,6 @@ import gpflow
 from scipy.cluster.vq import kmeans2
 import gpflow.training.monitor as mon
 
-from myKernel.KernelWithNN import KernelWithNN
 from myKernel.KernelWithNN import NNComposedKernel
 from myKernel.KernelWithNN import NN_SVGP
 from myKernel.CustomTensorBoardTask import CustomTensorBoardTask
@@ -73,7 +72,7 @@ def ex1():
 
     file_writer.close()
 
-    print('LML after the optimisation: %f' % m.compute_log_likelihood())
+    print('LML after the optimisation: %f' % model.compute_log_likelihood())
     # # predictions
     pY, pYv = model.predict_y(Xt)
     rmse = np.mean((pY - Yt) ** 2.0) ** 0.5
@@ -85,5 +84,3 @@ def ex1():
 if __name__ == "__main__":
     ex1()
     gpflow.reset_default_graph_and_session()
-
-
