@@ -1,17 +1,13 @@
 import numpy as np
 import tensorflow as tf
 import gpflow
-import gpflow.training.monitor as mon
-from gpflow.test_util import notebook_niter
 
 import myKernel.convkernels as ckern
-from myKernel.CustomTensorBoardTask import CustomTensorBoardTask
 from myKernel.NN import NN
 from myKernel.LoadData import LoadData
 
-float_type = gpflow.settings.float_type
-
-ITERATIONS = notebook_niter(1000)
+float_type = gpflow.settings.dtypes.float_type
+ITERATIONS = 1000
 
 class Ocean:
     input_dim = 150 * 160
@@ -20,9 +16,9 @@ class Ocean:
 
 
 def ex2():
-    minibatch_size = notebook_niter(1000, test_n=10)
-    gp_dim = 1
-    M = notebook_niter(240, test_n=5)
+    minibatch_size = 200
+    gp_dim = 15*16
+    M = 32
 
     ## placeholders
     X = tf.placeholder(tf.float32, [minibatch_size, Ocean.input_dim])  # fixed shape so num_data works in SVGP
@@ -30,7 +26,6 @@ def ex2():
     Xtest = tf.placeholder(tf.float32, [None, Ocean.input_dim])
 
     ## build graph
-
     with tf.variable_scope('cnn'):
         f_X = tf.cast(NN.cnn_fn(X, gp_dim), dtype=float_type)
 
@@ -39,15 +34,16 @@ def ex2():
 
     k = ckern.WeightedConv(gpflow.kernels.RBF(9), [15, 16], [3, 3]) + gpflow.kernels.White(1, 1e-3)
 
-    # Z = (k.kern_list[0].init_inducing(f_X, M, method="patches-unique")
-    #      if type(k) is gpflow.kernels.Add else
-    #      k.init_inducing(f_X, M, method="patches-unique"))
+    # Z = None
+    # if Z is None:
+    #     Z = (k.kernels[0].init_inducing(f_X, minibatch_size, M, method="patches-unique")
+    #          if type(k) is gpflow.kernels.Sum else
+    #          k.init_inducing(f_X, minibatch_size, M, method="patches-unique"))
 
-    # k.trainable = False
     gp_model = gpflow.models.SVGP(f_X, tf.cast(Y, dtype=float_type),
-                                  k, gpflow.likelihoods.Gaussian(),
-                                  Z=np.zeros((M, gp_dim)), # we'll set this later
-                                  num_latent=1)
+                                k, gpflow.likelihoods.Gaussian(),
+                                Z=np.zeros((M, gp_dim)), # we'll set this later
+                                num_latent=1)
 
     loss = -gp_model.likelihood_tensor
 
@@ -70,7 +66,7 @@ def ex2():
 
     fZ = sess.run(f_X, feed_dict={X:Ocean.X[ind]})
     # Z_0 = kmeans2(fZ, M)[0] might fail
-    Z_0 = fZ[np.random.choice(len(fZ), M, replace=False)]
+    Z_0 = fZ[np.random.choice(len(fZ), M, replace=True)]
 
     def set_gp_param(param, value):
         sess.run(tf.assign(param.unconstrained_tensor, param.transform.backward(value)))
@@ -79,8 +75,13 @@ def ex2():
 
     ## train
     for i in range(ITERATIONS):
-        ind = np.random.choice(Ocean.X.shape[0], minibatch_size, replace=False)
+        ind = np.random.choice(Ocean.X.shape[0], minibatch_size, replace=True)
         sess.run(opt_step, feed_dict={X:Ocean.X[ind], Y:Ocean.Y[ind]})
+        print('step {:.4f}'.format(i))
+        if i % 10 == 0:
+            rmse = np.mean((sess.run(my, feed_dict={Xtest:Ocean.Xt}) - Ocean.Yt.shape) ** 2) * 0.5
+            rmse = np.average(rmse.astype(float))
+            print('rmse is {:.4f}'.format(rmse))
 
     ## predict
     rmse = np.mean((sess.run(my, feed_dict={Xtest:Ocean.Xt}) - Ocean.Yt.shape) ** 2) * 0.5
@@ -88,5 +89,4 @@ def ex2():
     print('rmse is {:.4f}'.format(rmse))
 
 
-gpflow.reset_default_graph_and_session()
 ex2()

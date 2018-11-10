@@ -1,7 +1,7 @@
 import os
 import numpy as np
-import gpflow
-import gpflow.training.monitor as mon
+import GPflow
+import GPflow.training.monitor as mon
 import tensorflow as tf
 
 

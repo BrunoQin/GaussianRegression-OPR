@@ -16,19 +16,19 @@
 import numpy as np
 import tensorflow as tf
 
-import gpflow
+import gpflow as GPflow
 
-float_type = gpflow.settings.dtypes.float_type
+float_type = GPflow.settings.dtypes.float_type
 
 
-class Conv(gpflow.kernels.Kernel):
+class Conv(GPflow.kernels.Kernel):
     """
     Conv
     Plain convolutional kernel.
     """
 
     def __init__(self, basekern, img_size, patch_size, colour_channels=1):
-        gpflow.kernels.Kernel.__init__(self, np.prod(img_size))
+        GPflow.kernels.Kernel.__init__(self, np.prod(img_size))
         self.img_size = img_size
         self.patch_size = patch_size
         self.basekern = basekern
@@ -89,15 +89,15 @@ class Conv(gpflow.kernels.Kernel):
     def Kzz(self, Z):
         return self.basekern.K(Z)
 
-    def init_inducing(self, X, M, method="default"):
+    def init_inducing(self, X, minibatch_size, M, method="default"):
         if method == "default" or method == "random":
-            patches = self.compute_patches(X[np.random.permutation(len(X))[:M], :]).reshape(-1, self.patch_len)
+            patches = self.compute_patches(X[np.random.permutation(minibatch_size)[:M], :]).reshape(-1, self.patch_len)
             Zinit = patches[np.random.permutation(len(patches))[:M], :]
             Zinit += np.random.rand(*Zinit.shape) * 0.001
             return Zinit
         elif method == "patches-unique":
             patches = np.unique(self.compute_patches(
-                X[np.random.permutation(len(X))[:M], :]).reshape(-1, self.patch_len), axis=0)
+                X[np.random.permutation(tf.cast(minibatch_size, tf.int64))[:M], :]).reshape(-1, self.patch_len), axis=0)
             return patches[np.random.permutation((len(patches)))[:M], :]
         else:
             raise NotImplementedError
@@ -111,11 +111,11 @@ class Conv(gpflow.kernels.Kernel):
         return (self.img_size[0] - self.patch_size[0] + 1) * (
             self.img_size[1] - self.patch_size[1] + 1) * self.colour_channels
 
-    @gpflow.autoflow((float_type,))
+    @GPflow.autoflow((float_type,))
     def compute_patches(self, X):
         return self._get_patches(X)
 
-    @gpflow.autoflow((float_type, [None, None]), (float_type, [None, None]))
+    @GPflow.autoflow((float_type, [None, None]), (float_type, [None, None]))
     def compute_Kzx(self, Z, X):
         return self.Kzx(Z, X)
 
@@ -152,7 +152,7 @@ class ColourPatchConv(Conv):
 class WeightedConv(Conv):
     def __init__(self, basekern, img_size, patch_size, colour_channels=1):
         Conv.__init__(self, basekern, img_size, patch_size, colour_channels)
-        self.W = gpflow.Param(np.ones(self.num_patches))
+        self.W = GPflow.params.Parameter(np.ones(self.num_patches))
 
     def K(self, X, X2=None):
         Xp = self._get_patches(X)
@@ -203,7 +203,7 @@ class WeightedColourPatchConv(ColourPatchConv, WeightedConv):
 
 class ConvRBF(Conv):
     def __init__(self, img_size, patch_size):
-        base = gpflow.kernels.RBF(np.prod(patch_size), ARD=False)
+        base = GPflow.kernels.RBF(np.prod(patch_size), ARD=False)
         Conv.__init__(self, base, img_size, patch_size)
         # tf.conv2d does not have a float64 version implemented yet, so keep this bit of code locally float32.
         self.conv_dtype = tf.float32
@@ -228,7 +228,7 @@ class ConvRBF(Conv):
 class WeightedConvRBF(ConvRBF):
     def __init__(self, img_size, patch_size):
         ConvRBF.__init__(self, img_size, patch_size)
-        self.W = gpflow.Param(np.ones(self.num_patches))
+        self.W = GPflow.params.Parameter(np.ones(self.num_patches))
 
     def Kzx(self, Z, X):
         X = tf.reshape(X, [-1, self.img_size[0], self.img_size[1], 1], name="X")
